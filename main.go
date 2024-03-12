@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"unsafe"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -18,7 +17,7 @@ func main() {
 
 	glfw.WindowHint(glfw.Visible, glfw.False)
 
-	window, err := glfw.CreateWindow(720, 600, "Pong-Go!", nil, nil)
+	window, err := glfw.CreateWindow(912, 560, "Pong-Go!", nil, nil)
 
 	if err != nil {
 		log.Fatalln("Could not create window: ", err)
@@ -47,36 +46,26 @@ func main() {
 	gl.UseProgram(program)
 
 	vertices := []mgl32.Vec2{
-		{0.0, -1.0},
-		{0.7, 1.0},
-		{-0.95, -0.32},
-		{0.95, -0.32},
-		{-0.7, 1.0},
+		// left square
+		{-0.89, -0.18},
+		{-0.89, 0.18},
+		{-0.95, -0.18},
+		{-0.95, 0.18},
+		// right square
+		{0.89, -0.18},
+		{0.89, 0.18},
+		{0.95, -0.18},
+		{0.95, 0.18},
 	}
 
-	var buffer uint32
-	gl.GenBuffers(1, &buffer)
-
-	gl.BindBuffer(gl.ARRAY_BUFFER, buffer)
-
-	vertex_data := gl.Ptr(vertices)
-	vertex_size := int(unsafe.Sizeof(vertices[0])) * len(vertices)
-
-	gl.BufferData(gl.ARRAY_BUFFER, vertex_size, vertex_data, gl.DYNAMIC_DRAW)
-	gl.BindBuffer(gl.ARRAY_BUFFER, buffer)
-
-	loc := gl.GetAttribLocation(program, gl.Str("position\x00"))
-
-	gl.EnableVertexAttribArray(uint32(loc))
-
-	gl.VertexAttribPointer(uint32(loc), 2, gl.FLOAT, false, 0, nil)
+	send_to_gpu(&vertices, &program)
 
 	glfw.GetCurrentContext().Show()
 
 	const (
-		BG_RED   float32 = 1.0
-		BG_BLUE  float32 = 1.0
-		BG_GREEN float32 = 1.0
+		BG_RED   float32 = 0.03
+		BG_BLUE  float32 = 0.03
+		BG_GREEN float32 = 0.03
 		BG_ALPHA float32 = 1.0
 	)
 
@@ -85,7 +74,8 @@ func main() {
 
 		gl.ClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_ALPHA)
 
-		gl.DrawArrays(gl.LINE_LOOP, 0, 5)
+		gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+		gl.DrawArrays(gl.TRIANGLE_STRIP, 4, 4)
 
 		glfw.PollEvents()
 		window.SwapBuffers()

@@ -2,8 +2,10 @@ package main
 
 import (
 	"strings"
+	"unsafe"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 func get_shaders() (vertex uint32, fragment uint32) {
@@ -17,7 +19,7 @@ func get_shaders() (vertex uint32, fragment uint32) {
 
 	fragment_code := `
 	void main() {
-		gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 	}
 	`
 
@@ -72,4 +74,23 @@ func link_program(program_obj *uint32) {
 		print("gl.LinkProgram(*program_obj): ", log)
 		panic("Program link error.")
 	}
+}
+
+func send_to_gpu(vertices *[]mgl32.Vec2, program *uint32) {
+	var buffer uint32
+	gl.GenBuffers(1, &buffer)
+
+	gl.BindBuffer(gl.ARRAY_BUFFER, buffer)
+
+	vertex_data := gl.Ptr(*vertices)
+	vertex_size := int(unsafe.Sizeof(vertices)) * len(*vertices)
+
+	gl.BufferData(gl.ARRAY_BUFFER, vertex_size, vertex_data, gl.DYNAMIC_DRAW)
+	gl.BindBuffer(gl.ARRAY_BUFFER, buffer)
+
+	loc := gl.GetAttribLocation(*program, gl.Str("position\x00"))
+
+	gl.EnableVertexAttribArray(uint32(loc))
+
+	gl.VertexAttribPointer(uint32(loc), 2, gl.FLOAT, false, 0, nil)
 }
