@@ -69,10 +69,29 @@ func main() {
 		BG_ALPHA float32 = 1.0
 	)
 
+	var (
+		t_y float32 = 0.0
+		t_x float32 = 0.0
+	)
+
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		gl.ClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_ALPHA)
+
+		move(window, &t_x, &t_y)
+
+		translation := mgl32.Mat4{
+			1.0, 0.0, 0.0, t_x,
+			0.0, 1.0, 0.0, t_y,
+			0.0, 0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0, 1.0,
+		}
+
+		var loc uint8
+		gl.GetUniformLocation(program, &loc)
+
+		gl.UniformMatrix4fv(int32(loc), 1, true, &translation[0])
 
 		gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 		gl.DrawArrays(gl.TRIANGLE_STRIP, 4, 4)

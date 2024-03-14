@@ -11,9 +11,10 @@ import (
 func get_shaders() (vertex uint32, fragment uint32) {
 	vertex_code := `
 	attribute vec2 position;
+	uniform mat4 mat_transformation;
 
 	void main() {
-		gl_Position = vec4(position, 0.0, 1.0);
+		gl_Position = mat_transformation * vec4(position, 0.0, 1.0);
 	}
 	`
 
@@ -92,5 +93,5 @@ func send_to_gpu(vertices *[]mgl32.Vec2, program *uint32) {
 
 	gl.EnableVertexAttribArray(uint32(loc))
 
-	gl.VertexAttribPointer(uint32(loc), 2, gl.FLOAT, false, 0, nil)
+	gl.VertexAttribPointer(uint32(loc), 2, gl.FLOAT, false, int32(unsafe.Sizeof(vertices)), nil)
 }
